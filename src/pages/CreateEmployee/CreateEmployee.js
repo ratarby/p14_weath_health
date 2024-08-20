@@ -14,11 +14,7 @@ import FormField from '../../components/CreateEmployee/FormField';
 import Modal from '../../components/CreateEmployee/Modal';
 
 // Import date-related libraries
-import fr from 'dayjs/locale/fr';
 import dayjs from 'dayjs';
-
-// Set the locale to French
-dayjs.locale(fr);
 
 
 
@@ -28,16 +24,16 @@ const validationSchema = Yup.object().shape({
     lastName: Yup.string().required('Last name is required'),
     dateOfBirth: Yup.date()
         .transform((value, originalValue) => {
-            return dayjs(originalValue, 'DD-MM-YYYY').toDate();
+            return dayjs(originalValue, 'MM-DD-YYYY').toDate();
         })
         .min(dayjs().subtract(120, 'year').toDate(), 'Invalid birth date')
         .max(dayjs().subtract(18, 'year').toDate(), 'Must be at least 18 years old')
         .required('Birth date is Required'),
     startDate: Yup.date()
         .transform((value, originalValue) => {
-            return dayjs(originalValue, 'DD-MM-YYYY').toDate();
+            return dayjs(originalValue, 'MM-DD-YYYY').toDate();
         })
-        .min(dayjs('01-01-1970').toDate(), 'Start date must not be before 1970')
+        .min(dayjs('1970-01-01').toDate(), 'Start date must not be before 1970')
         .required('Start Date is required'),
     street: Yup.string().required('Street is required'),
     city: Yup.string().required('City is required'),
@@ -89,8 +85,8 @@ const CreateEmployee = React.memo(() => {
         // Log the submitted values to the console
         const formattedValues = {
             ...values,
-            dateOfBirth: values.dateOfBirth.format('DD-MM-YYYY'),
-            startDate: values.startDate.format('DD-MM-YYYY'),
+            dateOfBirth: values.dateOfBirth.format('MM-DD-YYYY'),
+            startDate: values.startDate.format('MM-DD-YYYY'),
         };
         // Reset the form after submission
         console.log('Employee Data:', formattedValues);
@@ -108,7 +104,7 @@ const CreateEmployee = React.memo(() => {
     ), []);
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
+        <LocalizationProvider dateAdapter={AdapterDayjs} >
             <Box
                 display="flex"
                 flexDirection="column"
