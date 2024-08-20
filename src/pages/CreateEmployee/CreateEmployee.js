@@ -18,28 +18,70 @@ import dayjs from 'dayjs';
 
 
 
+const MAX_YEAR = 2150;
 // Define the validation schema for the form
 const validationSchema = Yup.object().shape({
-    firstName: Yup.string().required('First name is required'),
-    lastName: Yup.string().required('Last name is required'),
+    // Define the validation rules
+    firstName: Yup.string()
+        .matches(/^[a-zA-Z\s]+$/, 'First name must contain only letters ')
+        .test('word-count', 'First name must be one to three words', function (value) {
+            if (value && value.match(/^[a-zA-Z\s]+$/)) {
+                return /^[a-zA-Z]+(\s[a-zA-Z]+){0,2}$/.test(value);
+            }
+            return true;
+        })
+        .required('First name is required')
+        .min(3, 'First name must be at least 3 characters')
+        .max(50, 'First name must not exceed 50 characters')
+        .required('First name is required'),
+    lastName: Yup.string()
+        .matches(/^[a-zA-Z\s]+$/, 'Last name must contain only letters ')
+        .test('word-count', 'Last name must be one to three words', function (value) {
+            if (value && value.match(/^[a-zA-Z\s]+$/)) {
+                return /^[a-zA-Z]+(\s[a-zA-Z]+){0,2}$/.test(value);
+            }
+            return true;
+        })
+        .min(3, 'Last name must be at least 3 characters')
+        .max(50, 'Last name must not exceed 50 characters')
+        .required('Last name is required'),
     dateOfBirth: Yup.date()
         .transform((value, originalValue) => {
             return dayjs(originalValue, 'MM-DD-YYYY').toDate();
         })
-        .min(dayjs().subtract(120, 'year').toDate(), 'Invalid birth date')
         .max(dayjs().subtract(18, 'year').toDate(), 'Must be at least 18 years old')
+        .test('max-year', `Year must not exceed ${MAX_YEAR}`, function (value) {
+            return value && value.getFullYear() <= MAX_YEAR;
+        })
         .required('Birth date is Required'),
+
     startDate: Yup.date()
         .transform((value, originalValue) => {
             return dayjs(originalValue, 'MM-DD-YYYY').toDate();
         })
         .min(dayjs('1970-01-01').toDate(), 'Start date must not be before 1970')
+        .test('max-year', `Year must not exceed ${MAX_YEAR}`, function (value) {
+            return value && value.getFullYear() <= MAX_YEAR;
+        })
         .required('Start Date is required'),
-    street: Yup.string().required('Street is required'),
-    city: Yup.string().required('City is required'),
-    state: Yup.string().required('State'),
-    zipCode: Yup.string().matches(/^\d{5}$/, 'Must be exactly 5 digits').required('Zip code is required'),
-    department: Yup.string().required('Department is required'),
+    street: Yup.string()
+        .min(5, 'Street must be at least 5 characters')
+        .max(100, 'Street must not exceed 100 characters')
+        .required('Street is required'),
+    city: Yup.string()
+        .matches(/^[a-zA-Z\s]+$/, 'City must contain only letters and spaces')
+        .min(2, 'City must be at least 2 characters')
+        .max(50, 'City must not exceed 50 characters')
+        .required('City is required'),
+    state: Yup.string()
+        .oneOf(states.map(state => state.value), 'Invalid state')
+        .required('State is required'),
+    zipCode: Yup.string()
+        .matches(/^\d{5}$/, 'Must be 5 digits ')
+        .required('Zip code is required'),
+    department: Yup.string()
+        .oneOf(departments, 'Invalid department')
+        .required('Department is required'),
 });
 
 // Define initial values for the form fields
@@ -129,7 +171,7 @@ const CreateEmployee = React.memo(() => {
                     validationSchema={memoizedValidationSchema}
                     onSubmit={saveEmployee}
                 >
-                    
+
                     {({ isSubmitting, handleSubmit }) => (
                         <EmployeeForm
                             formFields={formFields}
